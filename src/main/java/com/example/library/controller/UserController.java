@@ -4,6 +4,7 @@ import com.example.library.model.User;
 import com.example.library.repository.UserRepository;
 import com.example.library.dto.LoginRequest;
 import com.example.library.dto.LoginResponse;
+import com.example.library.util.JwtUtil;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
@@ -20,10 +21,12 @@ import java.util.Optional;
 public class UserController {
     private final UserRepository repo;
     private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
 
-    public UserController(UserRepository repo, PasswordEncoder passwordEncoder) {
+    public UserController(UserRepository repo, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
         this.repo = repo;
         this.passwordEncoder = passwordEncoder;
+        this.jwtUtil = jwtUtil;
     }
 
     @GetMapping
@@ -57,7 +60,43 @@ public class UserController {
     }
 
     /**
-     * Login endpoint - validates credentials and returns user information
+     * Register endpoint - creates user and returns JWT token
+     */
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@Valid @RequestBody User user) {
+        try {
+            if (repo.findByEmail(user.getEmail()).isPresent()) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
+            }
+
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+            User saved = repo.save(user);
+
+            String token = jwtUtil.generateToken(saved.getId().toString(), saved.getEmail(), saved.getRole().name());
+
+            LoginResponse response = new LoginResponse(
+                    saved.getId(),
+                    saved.getName(),
+                    saved.getSurname(),
+                    saved.getEmail(),
+                    saved.getAddress(),
+                    saved.getCity(),
+                    saved.getRole(),
+                    token
+            );
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (ResponseStatusException e) {
+            throw e;
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid user data: " + e.getMessage());
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to register user");
+        }
+    }
+
+    /**
+     * Login endpoint - validates credentials and returns user information with JWT token
      */
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest) {
@@ -81,6 +120,8 @@ public class UserController {
                 throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or password");
             }
 
+            String token = jwtUtil.generateToken(user.getId().toString(), user.getEmail(), user.getRole().name());
+
             LoginResponse response = new LoginResponse(
                     user.getId(),
                     user.getName(),
@@ -88,7 +129,8 @@ public class UserController {
                     user.getEmail(),
                     user.getAddress(),
                     user.getCity(),
-                    user.getRole()
+                    user.getRole(),
+                    token
             );
 
             return ResponseEntity.ok(response);
