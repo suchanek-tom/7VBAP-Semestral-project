@@ -1,32 +1,33 @@
 # 📚 Library System - REST API
 
-**Autor:** Tomáš Suchanek | **Předmět:** 7OPR3 | **Java:** 21 LTS | **Framework:** Spring Boot 3.5.7
+**Author:** Tomáš Suchanek | **Subject:** 7OPR3 | **Java:** 21 LTS | **Framework:** Spring Boot 3.5.7
 
 ---
 
-## 🚀 Spuštění
+## 🚀 Getting Started
 
 ```bash
 ./mvnw spring-boot:run
-# Server běží na http://localhost:8080
+# Server runs on http://localhost:8080
 ```
 
 ---
 
-## 📖 API Requesty
+## 📖 API Requests
 
 ### BOOKS API
 
-| Metoda | Endpoint | Popis |
-|--------|----------|-------|
-| GET | `/api/books` | Všechny knihy |
-| GET | `/api/books/{id}` | Kniha podle ID |
-| POST | `/api/books` | Vytvořit knihu |
-| POST | `/api/books/bulk` | Vytvořit více knih |
-| PUT | `/api/books/{id}` | Aktualizovat knihu |
-| DELETE | `/api/books/{id}` | Smazat knihu |
+| Method | Endpoint          | Description           |
+| ------ | ----------------- | --------------------- |
+| GET    | `/api/books`      | Get all books         |
+| GET    | `/api/books/{id}` | Get book by ID        |
+| POST   | `/api/books`      | Create a book         |
+| POST   | `/api/books/bulk` | Create multiple books |
+| PUT    | `/api/books/{id}` | Update a book         |
+| DELETE | `/api/books/{id}` | Delete a book         |
 
-**Příklad - Vytvořit knihu:**
+**Example - Create a book:**
+
 ```bash
 curl -X POST http://localhost:8080/api/books \
   -H "Content-Type: application/json" \
@@ -35,7 +36,7 @@ curl -X POST http://localhost:8080/api/books \
     "author": "George Orwell",
     "publicationYear": 1949,
     "isbn": "978-0451524935",
-    "content": "Dystopické dílo",
+    "content": "Dystopian work",
     "available": true
   }'
 ```
@@ -44,31 +45,33 @@ curl -X POST http://localhost:8080/api/books \
 
 ### USERS API
 
-| Metoda | Endpoint | Popis |
-|--------|----------|-------|
-| GET | `/api/users` | Všichni uživatelé |
-| GET | `/api/users/{id}` | Uživatel podle ID |
-| POST | `/api/users` | Vytvořit uživatele |
-| POST | `/api/users/login` | Přihlášení |
-| PUT | `/api/users/{id}` | Aktualizovat uživatele |
-| DELETE | `/api/users/{id}` | Smazat uživatele |
+| Method | Endpoint           | Description    |
+| ------ | ------------------ | -------------- |
+| GET    | `/api/users`       | Get all users  |
+| GET    | `/api/users/{id}`  | Get user by ID |
+| POST   | `/api/users`       | Create a user  |
+| POST   | `/api/users/login` | User login     |
+| PUT    | `/api/users/{id}`  | Update a user  |
+| DELETE | `/api/users/{id}`  | Delete a user  |
 
-**Příklad - Vytvořit uživatele:**
+**Example - Create a user:**
+
 ```bash
 curl -X POST http://localhost:8080/api/users \
   -H "Content-Type: application/json" \
   -d '{
-    "name": "Jan",
-    "surname": "Novák",
-    "email": "jan@example.com",
-    "address": "Ulice 123",
-    "city": "Praha",
-    "password": "heslo123",
+    "name": "John",
+    "surname": "Smith",
+    "email": "john@example.com",
+    "address": "Street 123",
+    "city": "Prague",
+    "password": "password123",
     "role": "ROLE_USER"
   }'
 ```
 
-**Příklad - Login:**
+**Example - Login:**
+
 ```bash
 curl -X POST http://localhost:8080/api/users/login \
   -H "Content-Type: application/json" \
@@ -82,16 +85,17 @@ curl -X POST http://localhost:8080/api/users/login \
 
 ### LOANS API
 
-| Metoda | Endpoint | Popis |
-|--------|----------|-------|
-| GET | `/api/loans` | Všechny výpůjčky |
-| GET | `/api/loans/{id}` | Výpůjčka podle ID |
-| POST | `/api/loans/borrow` | Půjčit knihu |
-| POST | `/api/loans/return/{id}` | Vrátit knihu |
-| PUT | `/api/loans/{id}` | Aktualizovat výpůjčku |
-| DELETE | `/api/loans/{id}` | Smazat výpůjčku |
+| Method | Endpoint                 | Description    |
+| ------ | ------------------------ | -------------- |
+| GET    | `/api/loans`             | Get all loans  |
+| GET    | `/api/loans/{id}`        | Get loan by ID |
+| POST   | `/api/loans/borrow`      | Borrow a book  |
+| POST   | `/api/loans/return/{id}` | Return a book  |
+| PUT    | `/api/loans/{id}`        | Update a loan  |
+| DELETE | `/api/loans/{id}`        | Delete a loan  |
 
-**Příklad - Půjčit knihu:**
+**Example - Borrow a book:**
+
 ```bash
 curl -X POST http://localhost:8080/api/loans/borrow \
   -H "Content-Type: application/json" \
@@ -101,7 +105,8 @@ curl -X POST http://localhost:8080/api/loans/borrow \
   }'
 ```
 
-**Příklad - Vrátit knihu:**
+**Example - Return a book:**
+
 ```bash
 curl -X POST http://localhost:8080/api/loans/return/1
 ```
@@ -116,7 +121,7 @@ curl -X POST http://localhost:8080/api/loans/return/1
 
 ---
 
-## 📊 Technologie
+## 📊 Technologies
 
 - Java 21 LTS
 - Spring Boot 3.5.7
@@ -127,4 +132,4 @@ curl -X POST http://localhost:8080/api/loans/return/1
 
 ---
 
-**Status:** ✅ Hotovo | **Datum:** 8. listopadu 2025
+**Status:** ✅ Complete | **Date:** November 8, 2025
