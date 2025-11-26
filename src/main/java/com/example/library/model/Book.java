@@ -32,6 +32,7 @@ public class Book {
 
     @NotNull(message = "Publication year is required")
     @Min(value = 1000, message = "Publication year must be at least 1000")
+    @Column(name = "publication_year")
     private int publicationYear;
 
     @NotBlank(message = "ISBN is required")

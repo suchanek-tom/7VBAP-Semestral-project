@@ -72,7 +72,7 @@ public class UserController {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             User saved = repo.save(user);
 
-            String token = jwtUtil.generateToken(saved.getId().toString(), saved.getEmail(), saved.getRole().name());
+            String token = jwtUtil.generateToken(String.valueOf(saved.getId()), saved.getEmail(), saved.getRole().name());
 
             LoginResponse response = new LoginResponse(
                     saved.getId(),
@@ -120,7 +120,7 @@ public class UserController {
                 throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or password");
             }
 
-            String token = jwtUtil.generateToken(user.getId().toString(), user.getEmail(), user.getRole().name());
+            String token = jwtUtil.generateToken(String.valueOf(user.getId()), user.getEmail(), user.getRole().name());
 
             LoginResponse response = new LoginResponse(
                     user.getId(),
