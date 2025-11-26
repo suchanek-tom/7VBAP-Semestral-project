@@ -1,7 +1,4 @@
 package com.example.library.model;
-
-import java.util.UUID;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
