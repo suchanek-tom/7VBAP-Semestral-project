@@ -3,12 +3,14 @@ package com.example.library.service;
 import com.example.library.model.Book;
 import com.example.library.repository.BookRepository;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class BookService {
-
+    private static final Logger logger = LoggerFactory.getLogger(BookService.class);
     private final BookRepository bookRepository;
 
     public BookService(BookRepository bookRepository) {
@@ -19,38 +21,58 @@ public class BookService {
      * Get all books from the database
      */
     public List<Book> getAllBooks() {
-        return bookRepository.findAll();
+        logger.debug("Service: Fetching all books from database");
+        List<Book> books = bookRepository.findAll();
+        logger.debug("Service: Retrieved {} books", books.size());
+        return books;
     }
 
     /**
      * Get a single book by ID
      */
     public Optional<Book> getBookById(Integer id) {
-        return bookRepository.findById(id);
+        logger.debug("Service: Fetching book with id: {}", id);
+        Optional<Book> book = bookRepository.findById(id);
+        if (book.isPresent()) {
+            logger.debug("Service: Found book: {}", book.get().getTitle());
+        } else {
+            logger.debug("Service: Book not found with id: {}", id);
+        }
+        return book;
     }
 
     /**
      * Save a new book to the database
      */
     public Book createBook(Book book) {
+        logger.info("Service: Creating new book - Title: {}, Author: {}", book.getTitle(), book.getAuthor());
         book.setAvailable(true);
-        return bookRepository.save(book);
+        Book savedBook = bookRepository.save(book);
+        logger.info("Service: Book created successfully with ID: {}", savedBook.getId());
+        return savedBook;
     }
 
     /**
      * Save multiple books to the database
      */
     public List<Book> createMultipleBooks(List<Book> books) {
+        logger.info("Service: Creating {} books in bulk", books.size());
         books.forEach(book -> book.setAvailable(true));
-        return bookRepository.saveAll(books);
+        List<Book> savedBooks = bookRepository.saveAll(books);
+        logger.info("Service: {} books created successfully", savedBooks.size());
+        return savedBooks;
     }
 
     /**
      * Update an existing book in the database
      */
     public Book updateBook(Integer id, Book updatedBook) {
+        logger.info("Service: Updating book with id: {}", id);
         Book book = bookRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Book with id " + id + " not found"));
+                .orElseThrow(() -> {
+                    logger.warn("Service: Book not found for update with id: {}", id);
+                    return new IllegalArgumentException("Book with id " + id + " not found");
+                });
 
         book.setTitle(updatedBook.getTitle());
         book.setAuthor(updatedBook.getAuthor());
@@ -59,17 +81,22 @@ public class BookService {
         book.setIsbn(updatedBook.getIsbn());
         book.setAvailable(updatedBook.isAvailable());
 
-        return bookRepository.save(book);
+        Book savedBook = bookRepository.save(book);
+        logger.info("Service: Book updated successfully with id: {}", id);
+        return savedBook;
     }
 
     /**
      * Delete a book from the database
      */
     public void deleteBook(Integer id) {
+        logger.info("Service: Deleting book with id: {}", id);
         if (!bookRepository.existsById(id)) {
+            logger.warn("Service: Book not found for deletion with id: {}", id);
             throw new IllegalArgumentException("Book with id " + id + " not found");
         }
         bookRepository.deleteById(id);
+        logger.info("Service: Book deleted successfully with id: {}", id);
     }
 
     /**

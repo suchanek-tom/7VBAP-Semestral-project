@@ -5,12 +5,15 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
 
 @Component
 public class JwtUtil {
+    private static final Logger logger = LoggerFactory.getLogger(JwtUtil.class);
 
     @Value("${jwt.secret:MyVerySecureSecretKeyForJWTTokenGenerationAndValidation12345}")
     private String secret;
@@ -23,10 +26,11 @@ public class JwtUtil {
     }
 
     public String generateToken(String userId, String email, String role) {
+        logger.debug("JWT: Generating token for user: {} with role: {}", email, role);
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expirationTime);
 
-        return Jwts.builder()
+        String token = Jwts.builder()
                 .subject(userId)
                 .claim("email", email)
                 .claim("role", role)
@@ -34,6 +38,9 @@ public class JwtUtil {
                 .expiration(expiryDate)
                 .signWith(getSigningKey())
                 .compact();
+
+        logger.debug("JWT: Token generated successfully for user: {}", email);
+        return token;
     }
 
     public String getUserIdFromToken(String token) {
@@ -54,8 +61,10 @@ public class JwtUtil {
                     .verifyWith(getSigningKey())
                     .build()
                     .parseSignedClaims(token);
+            logger.debug("JWT: Token validation successful");
             return true;
         } catch (Exception e) {
+            logger.warn("JWT: Token validation failed", e);
             return false;
         }
     }
