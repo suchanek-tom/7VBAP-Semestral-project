@@ -2,6 +2,8 @@ package com.example.library.service;
 
 import com.example.library.model.Book;
 import com.example.library.repository.BookRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,12 +20,14 @@ public class BookService {
     }
 
     /**
-     * Get all books from the database
+     * Get all books from the database with pagination
      */
-    public List<Book> getAllBooks() {
-        logger.debug("Service: Fetching all books from database");
-        List<Book> books = bookRepository.findAll();
-        logger.debug("Service: Retrieved {} books", books.size());
+    public Page<Book> getAllBooks(Pageable pageable) {
+        logger.debug("Service: Fetching books with pagination - page: {}, size: {}", 
+                     pageable.getPageNumber(), pageable.getPageSize());
+        Page<Book> books = bookRepository.findAll(pageable);
+        logger.debug("Service: Retrieved {} books out of {} total", 
+                     books.getNumberOfElements(), books.getTotalElements());
         return books;
     }
 

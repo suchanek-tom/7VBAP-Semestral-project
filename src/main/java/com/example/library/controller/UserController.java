@@ -6,6 +6,10 @@ import com.example.library.dto.LoginRequest;
 import com.example.library.dto.LoginResponse;
 import com.example.library.util.JwtUtil;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
@@ -14,10 +18,7 @@ import org.springframework.web.server.ResponseStatusException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.Optional;
-
-//todo pagination, filtering, sorting
 
 @RestController
 @RequestMapping("/api/users")
@@ -34,15 +35,24 @@ public class UserController {
         this.jwtUtil = jwtUtil;
     }
 
+    // Get all users with pagination
     @GetMapping
-    public ResponseEntity<List<User>> all() {
-        logger.info("GET request: Fetching all users");
+    public ResponseEntity<Page<User>> all(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "ASC") String sortDirection) {
+        logger.info("GET request: Fetching users - page: {}, size: {}, sortBy: {}, direction: {}", 
+                    page, size, sortBy, sortDirection);
         try {
-            List<User> users = repo.findAll();
-            logger.info("Successfully retrieved {} users", users.size());
+            Sort.Direction direction = sortDirection.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
+            Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+            Page<User> users = repo.findAll(pageable);
+            logger.info("Successfully retrieved page {} with {} users (total: {})", 
+                        page, users.getNumberOfElements(), users.getTotalElements());
             return ResponseEntity.ok(users);
         } catch (Exception e) {
-            logger.error("Error retrieving all users", e);
+            logger.error("Error retrieving users", e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to retrieve users");
         }
     }

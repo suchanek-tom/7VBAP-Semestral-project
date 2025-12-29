@@ -6,6 +6,10 @@ import com.example.library.model.User;
 import com.example.library.dto.BorrowLoanRequest;
 import com.example.library.repository.LoanRepository;
 import com.example.library.repository.BookRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
@@ -16,10 +20,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
-import java.util.List;
-
-//todo pagination, filtering, sorting
-
 
 @RestController
 @RequestMapping("/api/loans")
@@ -34,16 +34,25 @@ public class LoanController {
         this.bookRepo = bookRepo;
     }
 
+    // Get all loans with pagination (admin only)
     @GetMapping
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<List<Loan>> all() {
-        logger.info("GET request: Admin fetching all loans");
+    public ResponseEntity<Page<Loan>> all(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDirection) {
+        logger.info("GET request: Admin fetching loans - page: {}, size: {}, sortBy: {}, direction: {}", 
+                    page, size, sortBy, sortDirection);
         try {
-            List<Loan> loans = loanRepo.findAll();
-            logger.info("Successfully retrieved {} loans", loans.size());
+            Sort.Direction direction = sortDirection.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
+            Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+            Page<Loan> loans = loanRepo.findAll(pageable);
+            logger.info("Successfully retrieved page {} with {} loans (total: {})", 
+                        page, loans.getNumberOfElements(), loans.getTotalElements());
             return ResponseEntity.ok(loans);
         } catch (Exception e) {
-            logger.error("Error retrieving all loans", e);
+            logger.error("Error retrieving loans", e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to retrieve loans");
         }
     }

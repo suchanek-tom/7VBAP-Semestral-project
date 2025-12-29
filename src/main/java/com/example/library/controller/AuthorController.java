@@ -3,6 +3,10 @@ package com.example.library.controller;
 import com.example.library.model.Author;
 import com.example.library.service.AuthorService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,23 +27,32 @@ public class AuthorController {
         this.authorService = authorService;
     }
 
-    // Get all authors
+    // Get all authors with pagination and optional filters
     @GetMapping
-    public ResponseEntity<List<Author>> getAll(@RequestParam(required = false) String name,
-            @RequestParam(required = false) String nationality) {
-        logger.info("GET request: Fetching authors with filters - name: {}, nationality: {}", name, nationality);
+    public ResponseEntity<Page<Author>> getAll(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String nationality,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "ASC") String sortDirection) {
+        logger.info("GET request: Fetching authors - name: {}, nationality: {}, page: {}, size: {}", 
+                    name, nationality, page, size);
         try {
-            List<Author> authors;
+            Sort.Direction direction = sortDirection.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
+            Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+            Page<Author> authors;
 
             if (name != null && !name.isEmpty()) {
-                authors = authorService.searchAuthorsByName(name);
+                authors = authorService.searchAuthorsByName(name, pageable);
             } else if (nationality != null && !nationality.isEmpty()) {
-                authors = authorService.getAuthorsByNationality(nationality);
+                authors = authorService.getAuthorsByNationality(nationality, pageable);
             } else {
-                authors = authorService.getAllAuthors();
+                authors = authorService.getAllAuthors(pageable);
             }
 
-            logger.info("Successfully retrieved {} authors", authors.size());
+            logger.info("Successfully retrieved page {} with {} authors (total: {})", 
+                        page, authors.getNumberOfElements(), authors.getTotalElements());
             return ResponseEntity.ok(authors);
         } catch (Exception e) {
             logger.error("Error retrieving authors", e);

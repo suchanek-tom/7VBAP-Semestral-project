@@ -3,6 +3,8 @@ package com.example.library.service;
 import com.example.library.exception.AuthorNotFoundException;
 import com.example.library.model.Author;
 import com.example.library.repository.AuthorRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,20 +19,20 @@ public class AuthorService {
         this.authorRepository = authorRepository;
     }
 
-    public List<Author> getAllAuthors() {
-        return authorRepository.findAll();
+    public Page<Author> getAllAuthors(Pageable pageable) {
+        return authorRepository.findAll(pageable);
     }
 
     public Optional<Author> getAuthorById(Integer id) {
         return authorRepository.findById(id);
     }
 
-    public List<Author> searchAuthorsByName(String name) {
-        return authorRepository.findByName(name);
+    public Page<Author> searchAuthorsByName(String name, Pageable pageable) {
+        return authorRepository.findByName(name, pageable);
     }
 
-    public List<Author> getAuthorsByNationality(String nationality) {
-        return authorRepository.findByNationality(nationality);
+    public Page<Author> getAuthorsByNationality(String nationality, Pageable pageable) {
+        return authorRepository.findByNationality(nationality, pageable);
     }
 
     @Transactional
