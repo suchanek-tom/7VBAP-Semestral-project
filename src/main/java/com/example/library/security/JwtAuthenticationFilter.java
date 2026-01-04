@@ -25,6 +25,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
+        String path = request.getRequestURI();
+        if (isPublicEndpoint(path)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         try {
             String token = extractTokenFromRequest(request);
 
@@ -44,6 +50,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    /**
+     * Determines if the request path is a public endpoint that should skip JWT authentication.
+     * This includes Swagger/OpenAPI documentation endpoints and other public resources.
+     *
+     * @param path The request URI path
+     * @return true if the endpoint is public, false otherwise
+     */
+    private boolean isPublicEndpoint(String path) {
+        return path.startsWith("/swagger-ui") ||
+               path.equals("/swagger-ui.html") ||
+               path.startsWith("/v3/api-docs") ||
+               path.startsWith("/api/users/login") ||
+               path.startsWith("/api/users/register") ||
+               path.startsWith("/h2-console");
     }
 
     private String extractTokenFromRequest(HttpServletRequest request) {

@@ -46,17 +46,27 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authz -> authz
+                        // Public endpoints for authentication
                         .requestMatchers("/api/users/login", "/api/users/register").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
 
+                        // Swagger/OpenAPI endpoints - must be publicly accessible for API documentation
+                        // These endpoints allow developers and users to view and test the API without authentication
+                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers("/v3/api-docs/**", "/v3/api-docs.yaml").permitAll()
+
+                        // Admin-only endpoints
                         .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers("/api/users/**").hasAuthority("ROLE_ADMIN")
 
-                        .requestMatchers("GET", "/api/books", "/api/books/**").permitAll()
+                        // Books endpoints - GET is public, other operations require authentication
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/books", "/api/books/**").permitAll()
                         .requestMatchers("/api/books/**").authenticated()
 
+                        // Loan endpoints - all require authentication
                         .requestMatchers("/api/loans/**").authenticated()
 
+                        // All other requests require authentication
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
